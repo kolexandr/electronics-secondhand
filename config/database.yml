@@ -1,0 +1,35 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  username: <%= ENV.fetch("DB_USERNAME", "regear") %>
+  password: <%= ENV.fetch("DB_PASSWORD", "local_app_password") %>
+  host: <%= ENV.fetch("DB_HOST", "127.0.0.1") %>
+  port: <%= ENV.fetch("DB_PORT", 3307) %>
+
+development:
+  <<: *default
+  database: regear_development
+
+test:
+  <<: *default
+  database: regear_test
+
+production:
+  primary: &primary_production
+    <<: *default
+    database: electronics_production
+    username: electronics
+    password: <%= ENV["ELECTRONICS_DATABASE_PASSWORD"] %>
+  cache:
+    <<: *primary_production
+    database: electronics_production_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_production
+    database: electronics_production_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_production
+    database: electronics_production_cable
+    migrations_paths: db/cable_migrate
