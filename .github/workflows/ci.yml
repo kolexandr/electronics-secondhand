@@ -5,6 +5,9 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   scan_ruby:
     runs-on: ubuntu-latest
@@ -13,6 +16,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install MySQL client headers
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -20,16 +26,19 @@ jobs:
 
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
-      
+
       - name: Scan for known security vulnerabilities in gems used
-        run: bin/bundler-audit
-      
+        run: bin/bundler-audit check --update
+
   scan_js:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+
+      - name: Install MySQL client headers
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -46,6 +55,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+
+      - name: Install MySQL client headers
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -67,15 +79,29 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: regear
+      DB_PASSWORD: ci_app_password
+      PARALLEL_WORKERS: 1
 
     services:
       mysql:
-        image: mysql
+        image: mysql:8.4
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_ROOT_PASSWORD: ci_root_password
+          MYSQL_DATABASE: regear_test
+          MYSQL_USER: regear
+          MYSQL_PASSWORD: ci_app_password
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
 
     steps:
       - name: Install packages
@@ -89,46 +115,33 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Run tests
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: mysql2://127.0.0.1:3306
-        run: bin/rails db:test:prepare test
+      - name: Prepare MySQL schema
+        run: bin/rails db:schema:load
 
-  system-test:
+      - name: Check autoloading
+        run: bin/rails zeitwerk:check
+
+      - name: Run tests including separate-connection concurrency tests
+        run: bin/rails test
+
+  compose:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: true
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
-      - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev libvips
-
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
+      - name: Start the demo stack
+        run: docker compose up --build -d --wait --wait-timeout 180
 
-      - name: Run System Tests
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: mysql2://127.0.0.1:3306
-        run: bin/rails db:test:prepare test:system
+      - name: Verify listings and worker
+        run: |
+          curl --fail http://localhost:3000/listings
+          docker compose exec -T worker bin/rails runner 'require "sidekiq/api"; require "timeout"; Timeout.timeout(30) { sleep 1 while Sidekiq::ProcessSet.new.size.zero? }'
 
-      - name: Keep screenshots from failed system tests
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: screenshots
-          path: ${{ github.workspace }}/tmp/screenshots
-          if-no-files-found: ignore
+      - name: Show service logs
+        if: always()
+        run: docker compose logs --no-color
+
+      - name: Stop services
+        if: always()
+        run: docker compose down

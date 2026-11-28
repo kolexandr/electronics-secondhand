@@ -1,0 +1,17 @@
+FROM ruby:3.4.13-slim
+
+WORKDIR /rails
+
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential default-libmysqlclient-dev git libvips libyaml-dev pkg-config curl && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY Gemfile Gemfile.lock .ruby-version ./
+RUN gem install bundler -v 4.1.1 --no-document && bundle install
+
+COPY . .
+
+ENV RAILS_ENV=development DB_HOST=mysql DB_PORT=3306 REDIS_URL=redis://redis:6379/0
+
+EXPOSE 3000
+CMD ["bin/rails", "server", "-b", "0.0.0.0"]

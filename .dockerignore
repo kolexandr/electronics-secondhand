@@ -35,3 +35,9 @@
 
 /.dockerignore
 /Dockerfile*
+
+/.aws
+/.codex
+/.agents
+/AGENTS.md
+/docs
