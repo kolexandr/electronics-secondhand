@@ -104,6 +104,6 @@ class ListingsController < ApplicationController
       @total = scope.count
       @pages = [ (@total / 12.0).ceil, 1 ].max
       @page = params[:page].to_i.clamp(1, @pages)
-      @listings = scope.limit(12).offset((@page - 1) * 12)
+      @listings = scope.limit(12).offset((@page - 1) * 12).load
     end
 end
