@@ -1,0 +1,6 @@
+<% %w[router board sold].each do |name| %>
+<%= name %>_photo:
+  name: photo
+  record: <%= name %> (Listing)
+  blob: listing_image
+<% end %>

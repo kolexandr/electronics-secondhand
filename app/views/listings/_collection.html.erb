@@ -1,0 +1,12 @@
+<% if @listings.any? %>
+  <div class="listing-grid"><%= render @listings %></div>
+<% else %>
+  <div class="empty-state"><h2>No listings yet</h2><p>Try different filters, or give an item a new home.</p><%= link_to "Sell an item", new_listing_path, class: "button" %></div>
+<% end %>
+<% if @pages > 1 %>
+  <nav class="pagination" aria-label="Pages">
+    <% if @page > 1 %><%= link_to "← Previous", url_for(request.query_parameters.merge(page: @page - 1)), rel: "prev" %><% end %>
+    <span>Page <%= @page %> of <%= @pages %></span>
+    <% if @page < @pages %><%= link_to "Next →", url_for(request.query_parameters.merge(page: @page + 1)), rel: "next" %><% end %>
+  </nav>
+<% end %>

@@ -1,0 +1,16 @@
+<% content_for :title, "#{@listing.title} · Regear" %>
+<%= link_to "← Browse listings", listings_path, class: "back-link" %>
+<article class="listing-detail">
+  <div class="detail-image"><% if @listing.photo.attached? %><%= image_tag @listing.photo, alt: @listing.title %><% end %></div>
+  <div class="detail-info">
+    <p class="eyebrow"><%= @listing.category.name %></p>
+    <h1><%= @listing.title %></h1>
+    <div class="badges"><span class="badge"><%= Listing::CONDITIONS[@listing.condition] %></span><span class="badge"><%= @listing.status.humanize %></span></div>
+    <p class="detail-price"><%= euro_price(@listing) %></p>
+    <div class="description"><%= simple_format(@listing.description) %></div>
+    <p class="seller">Listed by <strong><%= @listing.seller.display_name %></strong></p>
+    <% if authenticated? && Current.user.id == @listing.seller_id && @listing.available? %>
+      <div class="actions"><%= link_to "Edit listing", edit_listing_path(@listing), class: "button" %><%= button_to "Remove listing", @listing, method: :delete, class: "button danger", data: { turbo_confirm: "Remove this listing?" } %></div>
+    <% end %>
+  </div>
+</article>

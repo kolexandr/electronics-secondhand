@@ -1,0 +1,6 @@
+networking:
+  name: Networking
+  slug: networking
+boards:
+  name: Development boards
+  slug: boards

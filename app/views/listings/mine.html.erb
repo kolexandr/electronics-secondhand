@@ -1,0 +1,3 @@
+<% content_for :title, "My listings · Regear" %>
+<div class="section-heading"><div><p class="eyebrow">Your shelf</p><h1>My listings</h1><p><%= pluralize(@total, "listing") %></p></div><%= link_to "Sell an item", new_listing_path, class: "button" %></div>
+<%= render "collection" %>

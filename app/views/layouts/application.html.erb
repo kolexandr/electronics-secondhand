@@ -1,25 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title><%= content_for(:title) || "Electronics" %></title>
+    <title><%= content_for(:title) || "Regear · Electronics, recirculated" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Electronics">
-    <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
-    <%= yield :head %>
-
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <%= yield :head %>
   </head>
-
   <body>
-    <%= yield %>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <%= link_to "regear", root_path, class: "wordmark" %>
+      <nav aria-label="Main navigation">
+        <%= link_to "Browse", listings_path %>
+        <% if authenticated? %>
+          <%= link_to "My listings", mine_listings_path %>
+          <%= link_to "Sell an item", new_listing_path, class: "button small" %>
+          <span class="account-name"><%= Current.user.display_name %></span>
+          <%= button_to "Sign out", session_path, method: :delete, class: "text-button" %>
+        <% else %>
+          <%= link_to "Sign in", new_session_path %>
+          <%= link_to "Sign up", new_registration_path, class: "button small" %>
+        <% end %>
+      </nav>
+    </header>
+    <main id="main" class="container">
+      <% flash.each do |type, message| %>
+        <div class="flash <%= type %>" role="<%= type == "alert" ? "alert" : "status" %>"><%= message %></div>
+      <% end %>
+      <%= yield %>
+    </main>
+    <footer class="site-footer">Good electronics deserve another chapter. <span>EUR · Second-hand only</span></footer>
   </body>
 </html>

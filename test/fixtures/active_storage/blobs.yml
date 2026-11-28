@@ -1,0 +1,8 @@
+listing_image:
+  key: fixture-listing-image
+  filename: listing.png
+  content_type: image/png
+  metadata: '{"identified":true,"analyzed":true}'
+  service_name: test
+  byte_size: <%= File.size(Rails.root.join("test/fixtures/files/listing.png")) %>
+  checksum: <%= Digest::MD5.base64digest(File.binread(Rails.root.join("test/fixtures/files/listing.png"))) %>

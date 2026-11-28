@@ -1,0 +1,27 @@
+router:
+  seller: one
+  category: networking
+  title: Used router
+  description: Working router with power adapter.
+  condition: good
+  price_cents: 2500
+  currency: EUR
+  status: available
+board:
+  seller: two
+  category: boards
+  title: Development board
+  description: Working board with soldered headers.
+  condition: like_new
+  price_cents: 5000
+  currency: EUR
+  status: available
+sold:
+  seller: one
+  category: networking
+  title: Sold switch
+  description: Previously sold switch.
+  condition: fair
+  price_cents: 1000
+  currency: EUR
+  status: sold

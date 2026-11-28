@@ -1,0 +1,11 @@
+<article class="listing-card">
+  <%= link_to listing_path(listing), class: "listing-image", tabindex: -1, aria: { hidden: true } do %>
+    <% if listing.photo.attached? %><%= image_tag listing.photo, alt: "", loading: "lazy" %><% end %>
+  <% end %>
+  <div class="card-body">
+    <div class="card-meta"><span><%= listing.category.name %></span><span><%= Listing::CONDITIONS[listing.condition] %></span></div>
+    <h3><%= link_to listing.title, listing %></h3>
+    <div class="card-bottom"><strong><%= euro_price(listing) %></strong><span><%= listing.seller.display_name %></span></div>
+    <% unless listing.available? %><span class="badge"><%= listing.status.humanize %></span><% end %>
+  </div>
+</article>

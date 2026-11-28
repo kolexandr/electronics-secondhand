@@ -1,0 +1,14 @@
+<%= render "shared/errors", record: listing %>
+<%= form_with model: listing do |form| %>
+  <%= form.label :title %><%= form.text_field :title, required: true, maxlength: 120 %>
+  <div class="form-row">
+    <div><%= form.label :category_id, "Category" %><%= form.collection_select :category_id, @categories, :id, :name, { prompt: "Choose a category" }, required: true %></div>
+    <div><%= form.label :condition %><%= form.select :condition, Listing::CONDITIONS.map { |value, label| [label, value] }, { prompt: "Choose condition" }, required: true %></div>
+  </div>
+  <%= form.label :price, "Price (€)" %><%= form.number_field :price, required: true, min: 0, max: 999999.99, step: "0.01", placeholder: "45.00" %>
+  <%= form.label :description %><%= form.text_area :description, required: true, maxlength: 5000, rows: 7, placeholder: "What works, what's included, and any wear or faults." %>
+  <%= form.label :photo %><%= form.file_field :photo, accept: "image/jpeg,image/png,image/webp", required: !listing.photo.attached?, aria: { describedby: "photo-help" } %>
+  <small id="photo-help">One JPEG, PNG, or WebP, up to 5 MB. A new upload replaces the current photo. Re-select the file if the form reports an error.</small>
+  <% if listing.photo.attached? && listing.photo.blob.persisted? %><%= image_tag listing.photo, alt: "Current listing photo", class: "photo-preview" %><% end %>
+  <div class="actions"><%= form.submit listing.persisted? ? "Save changes" : "Publish listing" %><%= link_to "Cancel", listing.persisted? ? listing_path(listing) : mine_listings_path %></div>
+<% end %>

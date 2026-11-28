@@ -1,0 +1,20 @@
+<% content_for :title, "Create an account · Regear" %>
+<section class="auth-panel">
+  <p class="eyebrow">Join the circuit</p>
+  <h1>Create an account</h1>
+  <p class="muted">Give your electronics a second life.</p>
+  <%= render "shared/errors", record: @user %>
+  <%= form_with model: @user, url: registration_path do |form| %>
+    <%= form.label :display_name %>
+    <%= form.text_field :display_name, required: true, maxlength: 80, autocomplete: "nickname", autofocus: true %>
+    <%= form.label :email_address, "Email" %>
+    <%= form.email_field :email_address, required: true, maxlength: 254, autocomplete: "email" %>
+    <%= form.label :password %>
+    <%= form.password_field :password, required: true, minlength: 12, maxlength: 72, autocomplete: "new-password", aria: { describedby: "password-help" } %>
+    <small id="password-help">Use at least 12 characters.</small>
+    <%= form.label :password_confirmation, "Confirm password" %>
+    <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password" %>
+    <%= form.submit "Create account" %>
+  <% end %>
+  <p>Already a member? <%= link_to "Sign in", new_session_path %></p>
+</section>
