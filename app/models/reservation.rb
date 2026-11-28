@@ -11,6 +11,7 @@ class Reservation < ApplicationRecord
   validates :agreed_price_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: Listing::MAX_PRICE_CENTS }
   validates :currency, inclusion: { in: [ "EUR" ] }
   validate :buyer_is_not_seller
+  after_create_commit :schedule_expiration, if: :active?
 
   def valid_for_checkout?
     active? && expires_at > Time.current
@@ -21,6 +22,18 @@ class Reservation < ApplicationRecord
   end
 
   private
+    def schedule_expiration
+      job = ExpireReservationJob.set(wait_until: expires_at).perform_later(id)
+      report_enqueue_failure(ActiveJob::EnqueueError.new("Expiration enqueue was rejected")) unless job
+    rescue RedisClient::Error, ConnectionPool::TimeoutError, ActiveJob::EnqueueError => error
+      report_enqueue_failure(error)
+    end
+
+    def report_enqueue_failure(error)
+      Rails.logger.error("Reservation #{id} committed but expiration enqueue failed (#{error.class}); run reservations:expire_overdue")
+      Rails.error.report(error, handled: true, context: { reservation_id: id })
+    end
+
     def buyer_is_not_seller
       errors.add(:buyer, "cannot reserve their own listing") if listing && buyer_id == listing.seller_id
     end

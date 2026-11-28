@@ -71,6 +71,36 @@ class ReservationConcurrencyTest < ActiveSupport::TestCase
     end
   end
 
+  test "expiration racing checkout at the deadline never creates an order" do
+    reservation = ReservationService.reserve(listing: @listing, buyer: @users[1])
+    travel_to reservation.expires_at, with_usec: true do
+      results = concurrently(
+        -> { ExpireReservationJob.perform_now(reservation.id) },
+        -> { ReservationService.checkout(reservation: reservation, buyer: @users[1]) }
+      )
+      assert_equal 1, results.count { |result| result.is_a?(ReservationService::Expired) }, results.inspect
+      assert results.any? { |result| result.is_a?(Reservation) }, results.inspect
+    end
+    assert reservation.reload.expired?
+    assert @listing.reload.available?
+    assert_equal 0, Order.where(listing_id: @listing.id).count
+  end
+
+  test "expiration racing a new reservation preserves the new hold" do
+    old = ReservationService.reserve(listing: @listing, buyer: @users[1])
+    travel_to old.expires_at, with_usec: true do
+      results = concurrently(
+        -> { ExpireReservationJob.perform_now(old.id) },
+        -> { ReservationService.reserve(listing: @listing, buyer: @users[2]) }
+      )
+      assert results.all? { |result| result.is_a?(Reservation) }, results.inspect
+    end
+    assert old.reload.expired?
+    current = Reservation.active.find_by!(listing_id: @listing.id)
+    assert_equal @users[2].id, current.buyer_id
+    assert @listing.reload.reserved?
+  end
+
   private
     def concurrently(*operations)
       ready = Queue.new

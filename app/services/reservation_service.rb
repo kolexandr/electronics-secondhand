@@ -63,6 +63,18 @@ class ReservationService
     result
   end
 
+  def self.expire(reservation_id:)
+    reservation = Reservation.find_by(id: reservation_id)
+    return unless reservation
+
+    listing = Listing.find(reservation.listing_id)
+    listing.with_lock(requires_new: true) do
+      reservation.reload(lock: true)
+      expire_if_due(reservation, listing, Time.current)
+      reservation
+    end
+  end
+
   def self.with_reservation_lock(reservation, buyer)
     current = Reservation.find(reservation.id)
     listing = Listing.find(current.listing_id)

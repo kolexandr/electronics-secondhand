@@ -1,4 +1,5 @@
 Rails.application.configure do
+  config.active_job.queue_adapter = :test
   config.enable_reloading = false
 
   config.eager_load = ENV["CI"].present?
