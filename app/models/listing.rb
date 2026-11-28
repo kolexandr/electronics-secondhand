@@ -4,6 +4,8 @@ class Listing < ApplicationRecord
 
   belongs_to :seller, class_name: "User", inverse_of: :listings
   belongs_to :category
+  has_many :reservations, dependent: :restrict_with_error
+  has_one :order, dependent: :restrict_with_error
   has_one_attached :photo
 
   enum :status, { available: "available", reserved: "reserved", sold: "sold" }, default: :available, validate: true

@@ -1,5 +1,12 @@
 module ApplicationHelper
   def euro_price(listing)
-    number_to_currency(BigDecimal(listing.price_cents.to_s) / 100, unit: "€")
+    euro_amount(listing.price_cents)
+  end
+  def euro_amount(cents)
+    number_to_currency(BigDecimal(cents.to_s) / 100, unit: "€")
+  end
+
+  def utc_time(time)
+    time.getutc.strftime("%d %b %Y at %H:%M UTC")
   end
 end

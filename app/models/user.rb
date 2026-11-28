@@ -3,6 +3,9 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
   has_many :listings, foreign_key: :seller_id, inverse_of: :seller, dependent: :restrict_with_error
 
+  has_many :reservations, foreign_key: :buyer_id, dependent: :restrict_with_error
+  has_many :orders, foreign_key: :buyer_id, dependent: :restrict_with_error
+
   normalizes :email_address, with: ->(value) { value.strip.downcase }
   normalizes :display_name, with: ->(value) { value.strip }
 

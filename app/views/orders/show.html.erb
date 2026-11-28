@@ -1,0 +1,15 @@
+<% content_for :title, "Order ##{@order.id} · Regear" %>
+<%= link_to "← My activity", reservations_path, class: "back-link" %>
+<section class="editor-panel">
+  <p class="eyebrow">Simulated purchase complete</p>
+  <h1>Order #<%= @order.id %></h1>
+  <h2><%= link_to @order.listing.title, @order.listing %></h2>
+  <p class="detail-price"><%= euro_amount(@order.total_cents) %></p>
+  <dl class="order-facts">
+    <dt>Buyer</dt><dd><%= @order.buyer.display_name %></dd>
+    <dt>Seller</dt><dd><%= @order.listing.seller.display_name %></dd>
+    <dt>Completed</dt><dd><%= time_tag @order.completed_at, utc_time(@order.completed_at) %></dd>
+    <dt>Reservation</dt><dd>#<%= @order.reservation_id %></dd>
+  </dl>
+  <p>No real payment was taken. This order is a demonstration purchase, with no shipping.</p>
+</section>

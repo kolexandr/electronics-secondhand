@@ -12,5 +12,28 @@
     <% if authenticated? && Current.user.id == @listing.seller_id && @listing.available? %>
       <div class="actions"><%= link_to "Edit listing", edit_listing_path(@listing), class: "button" %><%= button_to "Remove listing", @listing, method: :delete, class: "button danger", data: { turbo_confirm: "Remove this listing?" } %></div>
     <% end %>
+    <section class="purchase-panel" aria-label="Purchase options">
+      <% if @listing.sold? %>
+        <p>This item has been sold.</p>
+      <% elsif authenticated? && Current.user.id == @listing.seller_id %>
+        <p>This is your listing. Buyers can reserve it for 15 minutes.</p>
+      <% elsif @active_reservation&.valid_for_checkout? %>
+        <% if authenticated? && @active_reservation.buyer_id == Current.user.id %>
+          <%= link_to "View your reservation", reservation_path(@active_reservation), class: "button" %>
+        <% else %>
+          <p>Another buyer has reserved this item. Check back after <%= time_tag @active_reservation.expires_at, utc_time(@active_reservation.expires_at) %>.</p>
+        <% end %>
+      <% elsif @listing.available? || @active_reservation&.display_status == "expired" %>
+        <p>Reserve this item for 15 minutes before completing a simulated purchase.</p>
+        <% if authenticated? %>
+          <%= button_to "Reserve for #{euro_price(@listing)}", listing_reservations_path(@listing), class: "button" %>
+        <% else %>
+          <%= link_to "Sign in to reserve", new_session_path, class: "button" %>
+        <% end %>
+        <small>No real payment or shipping is involved.</small>
+      <% else %>
+        <p>This item is currently unavailable.</p>
+      <% end %>
+    </section>
   </div>
 </article>

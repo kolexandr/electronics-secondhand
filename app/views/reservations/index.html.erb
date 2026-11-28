@@ -1,0 +1,40 @@
+<% content_for :title, "My activity · Regear" %>
+<p class="eyebrow">Your account</p>
+<h1>My activity</h1>
+<p class="muted">Your latest 50 reservations, purchases, and sales in each section.</p>
+<section aria-labelledby="reservations-heading">
+  <h2 id="reservations-heading">Reservations</h2>
+  <% if @reservations.empty? %><p>No reservations yet. <%= link_to "Browse available items", listings_path %>.</p><% end %>
+  <div class="activity-list">
+    <% @reservations.each do |reservation| %>
+      <article class="activity-row">
+        <div><h3><%= link_to reservation.listing.title, reservation %></h3><span class="muted">Seller: <%= reservation.listing.seller.display_name %></span></div>
+        <div><strong><%= euro_amount(reservation.agreed_price_cents) %></strong><span class="badge"><%= reservation.display_status.humanize %></span></div>
+      </article>
+    <% end %>
+  </div>
+</section>
+<section aria-labelledby="purchases-heading">
+  <h2 id="purchases-heading">Purchases</h2>
+  <% if @purchases.empty? %><p>No purchases yet.</p><% end %>
+  <div class="activity-list">
+    <% @purchases.each do |order| %>
+      <article class="activity-row">
+        <div><h3><%= link_to order.listing.title, order %></h3><span class="muted">From <%= order.listing.seller.display_name %> · <%= utc_time(order.completed_at) %></span></div>
+        <strong><%= euro_amount(order.total_cents) %></strong>
+      </article>
+    <% end %>
+  </div>
+</section>
+<section aria-labelledby="sales-heading">
+  <h2 id="sales-heading">Sales</h2>
+  <% if @sales.empty? %><p>No sales yet.</p><% end %>
+  <div class="activity-list">
+    <% @sales.each do |order| %>
+      <article class="activity-row">
+        <div><h3><%= link_to order.listing.title, order %></h3><span class="muted">Sold to <%= order.buyer.display_name %> · <%= utc_time(order.completed_at) %></span></div>
+        <strong><%= euro_amount(order.total_cents) %></strong>
+      </article>
+    <% end %>
+  </div>
+</section>

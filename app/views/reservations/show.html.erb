@@ -1,0 +1,23 @@
+<% content_for :title, "Your reservation · Regear" %>
+<%= link_to "← My activity", reservations_path, class: "back-link" %>
+<section class="editor-panel">
+  <p class="eyebrow">Your reservation</p>
+  <h1><%= @reservation.listing.title %></h1>
+  <p><span class="badge"><%= @reservation.display_status.humanize %></span></p>
+  <p class="detail-price"><%= euro_amount(@reservation.agreed_price_cents) %></p>
+  <p>Seller: <strong><%= @reservation.listing.seller.display_name %></strong></p>
+  <% if @reservation.valid_for_checkout? %>
+    <p>Your hold ends on <strong><%= time_tag @reservation.expires_at, utc_time(@reservation.expires_at) %></strong>.</p>
+    <p>This checkout is a simulation. No money will be charged and no shipping will be arranged.</p>
+    <div class="actions">
+      <%= button_to "Complete simulated purchase", checkout_reservation_path(@reservation), class: "button" %>
+      <%= button_to "Cancel reservation", cancel_reservation_path(@reservation), class: "button danger" %>
+    </div>
+  <% elsif @reservation.completed? %>
+    <p>Your purchase is complete.</p>
+    <%= link_to "View order", order_path(@reservation.order), class: "button" %>
+  <% else %>
+    <p>This reservation has <%= @reservation.display_status %>. It cannot be used to complete a purchase.</p>
+    <%= link_to "Check item availability", listing_path(@reservation.listing), class: "button" %>
+  <% end %>
+</section>

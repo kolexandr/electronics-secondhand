@@ -34,6 +34,7 @@ class ListingsController < ApplicationController
 
   def show
     @listing = Listing.includes(:seller, :category).with_attached_photo.find(params[:id])
+    @active_reservation = @listing.reservations.active.first
   end
 
   def mine

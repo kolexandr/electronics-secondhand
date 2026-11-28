@@ -17,6 +17,7 @@
         <%= link_to "Browse", listings_path %>
         <% if authenticated? %>
           <%= link_to "My listings", mine_listings_path %>
+          <%= link_to "My activity", reservations_path %>
           <%= link_to "Sell an item", new_listing_path, class: "button small" %>
           <span class="account-name"><%= Current.user.display_name %></span>
           <%= button_to "Sign out", session_path, method: :delete, class: "text-button" %>
